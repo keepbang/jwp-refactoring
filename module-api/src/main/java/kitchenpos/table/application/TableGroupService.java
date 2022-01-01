@@ -6,7 +6,7 @@ import kitchenpos.table.domain.TableGroup;
 import kitchenpos.table.domain.TableGroupRepository;
 import kitchenpos.table.dto.TableGroupRequest;
 import kitchenpos.table.dto.TableGroupResponse;
-import kitchenpos.validator.OrderTableValidator;
+import kitchenpos.table.event.TableEventHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,15 +17,15 @@ import java.util.List;
 public class TableGroupService {
     private final OrderTableRepository orderTableRepository;
     private final TableGroupRepository tableGroupRepository;
-    private final OrderTableValidator orderTableValidator;
+    private final TableEventHandler tableEventHandler;
 
     public TableGroupService(
             final OrderTableRepository orderTableRepository,
             final TableGroupRepository tableGroupRepository,
-            final OrderTableValidator orderTableValidator) {
-        this.orderTableValidator = orderTableValidator;
+            final TableEventHandler tableEventHandler) {
         this.orderTableRepository = orderTableRepository;
         this.tableGroupRepository = tableGroupRepository;
+        this.tableEventHandler = tableEventHandler;
     }
 
 
@@ -40,10 +40,7 @@ public class TableGroupService {
 
     @Transactional
     public void ungroup(final Long tableGroupId) {
-        OrderTables savedOrderTables = OrderTables.ofUngroup(
-                orderTableRepository.findAllByTableGroupId(tableGroupId));
-        orderTableValidator.checkTablesOrderStatus(savedOrderTables);
-        savedOrderTables.ungroup();
+        tableEventHandler.ungrouped(tableGroupId);
         tableGroupRepository.deleteById(tableGroupId);
     }
 

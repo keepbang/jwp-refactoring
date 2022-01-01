@@ -2,6 +2,7 @@ package kitchenpos.table.application;
 
 import kitchenpos.table.domain.OrderTable;
 import kitchenpos.table.domain.OrderTableRepository;
+import kitchenpos.table.domain.OrderTables;
 import kitchenpos.table.dto.ChangeEmptyRequest;
 import kitchenpos.table.dto.ChangeGuestsRequest;
 import kitchenpos.table.dto.OrderTableRequest;
@@ -55,6 +56,13 @@ public class TableService {
         final OrderTable savedOrderTable = orderTableRepository.findByIdElseThrow(orderTableId);
         savedOrderTable.changeNumberOfGuests(changeGuestsRequest.toNumberOfGuests());
         return OrderTableResponse.of(savedOrderTable);
+    }
+
+    @Transactional
+    public void ungroup(final Long tableGroupId) {
+        OrderTables savedOrderTables = OrderTables.ofUngroup(orderTableRepository.findAllByTableGroupId(tableGroupId));
+        orderTableValidator.checkTablesOrderStatus(savedOrderTables);
+        savedOrderTables.ungroup();
     }
 
     public boolean isExistsByIdAndEmptyTrue(final Long id) {
